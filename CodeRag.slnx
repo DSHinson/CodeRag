@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="CodeRag.Cli/CodeRag.Cli.csproj" />
+  <Project Path="CodeRag.Common/CodeRag.Common.csproj" />
+  <Project Path="CodeRag.db/CodeRag.db.csproj" Id="b76432f9-4ada-43a1-9d32-d3ec024b4e58" />
+</Solution>
