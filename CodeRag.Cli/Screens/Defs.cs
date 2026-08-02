@@ -5,8 +5,9 @@
         public enum ScreenIds
         {
             WelcomeScreen = 1,
-            MainMenuScreen = 2,
-            ExitScreen = 3
+            IndexingScreen= 2,
+            MainMenuScreen = 3,
+            ExitScreen = 4
         }
 }
 }

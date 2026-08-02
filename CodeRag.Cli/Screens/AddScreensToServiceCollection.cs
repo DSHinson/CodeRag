@@ -10,6 +10,7 @@ namespace CodeRag.Cli.Screens
         public static void AddScreens(this IServiceCollection services)
         {
             services.AddSingleton<IScreen,WelcomeScreen>();
+            services.AddSingleton<IScreen, IndexingScreen>();
         }
     }
 }

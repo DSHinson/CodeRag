@@ -51,6 +51,7 @@ namespace CodeRag.Cli.RenderLoop
             var initResult = target.Initialize();
 
             Console.Clear();
+
             _activeScreen = target;
 
             var renderResult = _activeScreen.Render();

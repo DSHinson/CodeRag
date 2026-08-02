@@ -13,10 +13,13 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.10" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CodeRag.bl\CodeRag.bl.csproj" />
     <ProjectReference Include="..\CodeRag.Common\CodeRag.Common.csproj" />
+    <ProjectReference Include="..\CodeRag.db\CodeRag.db.csproj" />
   </ItemGroup>
 
 </Project>

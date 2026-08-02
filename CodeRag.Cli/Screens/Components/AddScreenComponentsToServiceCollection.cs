@@ -1,4 +1,5 @@
 ﻿using CodeRag.Cli.Screens.Components.Buttons;
+using CodeRag.Cli.Screens.Components.List;
 using CodeRag.Cli.Screens.Components.StatusBar;
 using CodeRag.Cli.Screens.Components.WelcomeBanner;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,17 @@ namespace CodeRag.Cli.Screens.Components
         public static void AddScreenComponents(this IServiceCollection services)
         {
             services.AddTransient<IButtonComponent, ButtonComponent>();
+            services.AddScoped<IListComponent>(provider =>
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    return new WindowsListComponent();
+                }
+                else
+                {
+                    throw new PlatformNotSupportedException("This application only supports Windows.");
+                }
+            });
             services.AddScoped<IStatusBar>(provider =>
             {
                 if (OperatingSystem.IsWindows())

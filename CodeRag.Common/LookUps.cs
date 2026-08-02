@@ -6,6 +6,7 @@
         {
             public static readonly string RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CodeRag");
             public static readonly string DbPath = Path.Combine(RootPath, "coderag.db");
+            public static string ModelsPath => Path.Combine(RootPath, "models");
         }
     }
 }

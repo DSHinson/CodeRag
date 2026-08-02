@@ -8,12 +8,14 @@ using static CodeRag.Cli.Screens.Defs;
 
 namespace CodeRag.Cli.Screens
 {
+    /// <summary>
+    /// Represents a screen in the application that can be initialized, rendered, and handle input events.
+    /// </summary>
     internal interface IScreen: IDisposable
     {
         public ScreenIds ScreenId { get; }
-        public Result Initialize();
-        public Result Render();
-
-        public Result HandleEvent(InputKeyEvent screenEvent);
+        public Task<Result> Initialize();
+        public Task<Result> Render();
+        public Task<Result> HandleEvent(InputKeyEvent screenEvent);
     }
 }
