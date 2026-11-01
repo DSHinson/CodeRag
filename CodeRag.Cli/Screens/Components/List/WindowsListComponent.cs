@@ -20,6 +20,8 @@ namespace CodeRag.Cli.Screens.Components.List
 
         public int? SelectedIndex => _items.Count == 0 ? null : _selectedIndex;
 
+        public string? SelectedItem => SelectedIndex.HasValue ? _items[SelectedIndex.Value] : null;
+
         public void SetItems(IReadOnlyList<string> items)
         {
             _items = items.ToList();

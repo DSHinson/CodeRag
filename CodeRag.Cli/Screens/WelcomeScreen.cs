@@ -1,12 +1,13 @@
 ﻿using CodeRag.Cli.Events;
 using CodeRag.Cli.Screens.Components.Buttons;
+using CodeRag.Cli.Screens.Components.Confirmation;
 using CodeRag.Cli.Screens.Components.List;
 using CodeRag.Cli.Screens.Components.StatusBar;
 using CodeRag.Cli.Screens.Components.WelcomeBanner;
 using CodeRag.Common.Events;
 using CodeRag.Common.Results;
 using CodeRag.db.Store;
-using static CodeRag.Cli.Screens.Defs;
+using static CodeRag.Cli.Screens.ScreenDefs;
 
 namespace CodeRag.Cli.Screens
 {
@@ -18,6 +19,10 @@ namespace CodeRag.Cli.Screens
         private IStatusBar? _statusBar;
         private ISqlStore _sqlStore;
         private IListComponent _listComponent;
+        private IConfirmationComponent _confirmation;
+
+        private bool _confirmationActive;
+        private string? _pendingDeletePath;
 
         // 0 = list, 1..N = buttons
         private int _focusedIndex;
@@ -29,13 +34,15 @@ namespace CodeRag.Cli.Screens
             IButtonComponent btnAddRepo,
             IButtonComponent btnNext,
             ISqlStore sqlStore,
-            IListComponent listComponent)
+            IListComponent listComponent,
+            IConfirmationComponent confirmation)
         {
             _welcomeMessage = welcomeBanner ?? throw new ArgumentNullException(nameof(welcomeBanner));
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
             _statusBar = statusBar ?? throw new ArgumentNullException(nameof(statusBar));
             _sqlStore = sqlStore ?? throw new ArgumentNullException(nameof(sqlStore));
             _listComponent = listComponent ?? throw new ArgumentNullException(nameof(listComponent));
+            _confirmation = confirmation ?? throw new ArgumentNullException(nameof(confirmation));
 
             btnAddRepo.Label = "Add Repository";
             btnAddRepo.IsActive = false;
@@ -50,6 +57,12 @@ namespace CodeRag.Cli.Screens
 
         public async Task<Result> HandleEvent(InputKeyEvent inputKeyEvent)
         {
+            // A pending confirmation owns all input until it resolves
+            if (_confirmationActive)
+            {
+                return await HandleConfirmationInputAsync(inputKeyEvent);
+            }
+
             var key = inputKeyEvent.Key.Key;
             int totalFocusTargets = 1 + btnList.Count; // list + buttons
 
@@ -63,14 +76,31 @@ namespace CodeRag.Cli.Screens
 
             if (_focusedIndex == 0)
             {
-                // list is focused — arrows move selection
+                // list is focused: arrows move selection, Delete asks for confirmation
                 switch (key)
                 {
                     case ConsoleKey.UpArrow:
                         _listComponent.MoveUp();
                         break;
+
                     case ConsoleKey.DownArrow:
                         _listComponent.MoveDown();
+                        break;
+
+                    case ConsoleKey.Enter:
+                        break;
+
+                    case ConsoleKey.Delete:
+                        if (_listComponent.SelectedItem is string path)
+                        {
+                            _pendingDeletePath = path;
+                            _confirmationActive = true;
+                            LayoutConfirmation();
+                            _confirmation.Prompt($"Delete '{path}'?");
+
+                            // return early so the list doesn't redraw over the prompt
+                            return ResultHelpers.ToResult();
+                        }
                         break;
                 }
 
@@ -97,11 +127,38 @@ namespace CodeRag.Cli.Screens
             return ResultHelpers.ToResult();
         }
 
+        private async Task<Result> HandleConfirmationInputAsync(InputKeyEvent inputKeyEvent)
+        {
+            _confirmation.HandleInput(inputKeyEvent.Key);
+
+            if (_confirmation.IsPending)
+            {
+                return ResultHelpers.ToResult();
+            }
+
+            bool confirmed = _confirmation.LastResult;
+            string? path = _pendingDeletePath;
+
+            _confirmationActive = false;
+            _pendingDeletePath = null;
+            _confirmation.Clear();
+
+            if (confirmed && path is not null)
+            {
+                await DeleteRepoAsync(path);
+            }
+
+            RedrawFocusables();
+            return ResultHelpers.ToResult();
+        }
+
         private async Task AddRepositoryAsync()
         {
             var folderPath = PickFolder();
             if (string.IsNullOrEmpty(folderPath))
+            {
                 return;
+            }
 
             var insertResult = await _sqlStore.ExecuteAsync(
                 "INSERT INTO repositories (path, added_at) VALUES (@Path, @AddedAt)",
@@ -122,8 +179,30 @@ namespace CodeRag.Cli.Screens
             _listComponent.Render();
         }
 
+        private async Task DeleteRepoAsync(string path)
+        {
+            var deleteResult = await _sqlStore.ExecuteAsync(
+                "DELETE FROM repositories WHERE path = @Path",
+                new { Path = path });
+
+            switch (deleteResult)
+            {
+                case Result<int>.Success:
+                    await ReloadRepoListAsync();
+                    _statusBar!.SetStatus($"Removed {path}");
+                    break;
+
+                case Result<int>.Failure failure:
+                    _statusBar!.SetStatus($"Failed to remove repo: {failure.FailureMessage}");
+                    break;
+            }
+        }
+
         public async Task<Result> Initialize()
         {
+            _confirmationActive = false;
+            _pendingDeletePath = null;
+
             var loadResult = await ReloadRepoListAsync();
             UpdateFocus();
             return loadResult;
@@ -152,7 +231,9 @@ namespace CodeRag.Cli.Screens
         {
             _listComponent.IsActive = _focusedIndex == 0;
             for (int i = 0; i < btnList.Count; i++)
+            {
                 btnList[i].IsActive = _focusedIndex == i + 1;
+            }
         }
 
         private void RedrawFocusables()
@@ -175,7 +256,9 @@ namespace CodeRag.Cli.Screens
 
             _listComponent.Render();
             foreach (var btn in btnList)
+            {
                 btn.Render();
+            }
 
             _statusBar!.SetStatus("Ready...");
             return Task.FromResult(ResultHelpers.ToResult());
@@ -202,6 +285,12 @@ namespace CodeRag.Cli.Screens
             }
         }
 
+        private void LayoutConfirmation()
+        {
+            _confirmation.Left = 0;
+            _confirmation.Top = Console.WindowHeight - 5;
+        }
+
         public string? PickFolder()
         {
             string? result = null;
@@ -215,7 +304,9 @@ namespace CodeRag.Cli.Screens
                 };
 
                 if (dialog.ShowDialog() == DialogResult.OK)
+                {
                     result = dialog.SelectedPath;
+                }
             });
 
             thread.SetApartmentState(ApartmentState.STA);

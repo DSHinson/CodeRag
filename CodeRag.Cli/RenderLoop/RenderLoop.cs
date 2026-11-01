@@ -4,7 +4,7 @@ using CodeRag.Common.Events;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Threading.Channels;
-using static CodeRag.Cli.Screens.Defs;
+using static CodeRag.Cli.Screens.ScreenDefs;
 
 namespace CodeRag.Cli.RenderLoop
 {

@@ -5,11 +5,11 @@ namespace CodeRag.Cli.Events
 {
     internal sealed class NavigateEvent :IEvent
     {
-        public NavigateEvent(Defs.ScreenIds screenId)
+        public NavigateEvent(ScreenDefs.ScreenIds screenId)
         {
             ScreenId = screenId;
         }
 
-        public Defs.ScreenIds ScreenId { get; }
+        public ScreenDefs.ScreenIds ScreenId { get; }
     }
 }

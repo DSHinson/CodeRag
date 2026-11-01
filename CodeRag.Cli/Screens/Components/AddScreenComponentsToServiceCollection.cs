@@ -1,4 +1,5 @@
 ﻿using CodeRag.Cli.Screens.Components.Buttons;
+using CodeRag.Cli.Screens.Components.Confirmation;
 using CodeRag.Cli.Screens.Components.List;
 using CodeRag.Cli.Screens.Components.StatusBar;
 using CodeRag.Cli.Screens.Components.WelcomeBanner;
@@ -38,6 +39,17 @@ namespace CodeRag.Cli.Screens.Components
                 if (OperatingSystem.IsWindows())
                 {
                     return new WindowsWelcomeBanner();
+                }
+                else
+                {
+                    throw new PlatformNotSupportedException("This application only supports Windows.");
+                }
+            });
+            services.AddTransient<IConfirmationComponent, WindowsConfirmationComponent>(provider =>
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    return new WindowsConfirmationComponent(provider.GetRequiredService<IButtonComponent>(), provider.GetRequiredService<IButtonComponent>());
                 }
                 else
                 {

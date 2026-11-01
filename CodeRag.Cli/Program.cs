@@ -12,7 +12,7 @@ using CodeRag.db.Store;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SQLitePCL;
-using static CodeRag.Cli.Screens.Defs;
+using static CodeRag.Cli.Screens.ScreenDefs;
 using static CodeRag.Common.Results.Result;
 
 namespace CodeRag

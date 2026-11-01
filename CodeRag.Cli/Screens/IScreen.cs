@@ -4,7 +4,7 @@ using CodeRag.Common.Results;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using static CodeRag.Cli.Screens.Defs;
+using static CodeRag.Cli.Screens.ScreenDefs;
 
 namespace CodeRag.Cli.Screens
 {

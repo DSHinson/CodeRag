@@ -5,7 +5,7 @@ using CodeRag.Common.Events;
 using CodeRag.Common.Results;
 using CodeRag.db.Store;
 using CodeRag.bl.Indexing;
-using static CodeRag.Cli.Screens.Defs;
+using static CodeRag.Cli.Screens.ScreenDefs;
 
 namespace CodeRag.Cli.Screens
 {

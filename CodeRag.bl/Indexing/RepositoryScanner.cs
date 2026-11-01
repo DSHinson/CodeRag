@@ -17,20 +17,28 @@
             return CountRecursive(repositoryPath);
         }
 
-        private int CountRecursive(string dir)
+        private int CountRecursive(string dir, int depth = 0)
         {
             int count = 0;
-
+            if (depth > 1000)
+            {
+                // Prevent stack overflow in case of very deep directory structures
+                return count;
+            }
             try
             {
                 foreach (var file in Directory.EnumerateFiles(dir))
+                {
                     count++;
+                }
 
                 foreach (var subDir in Directory.EnumerateDirectories(dir))
                 {
                     var name = Path.GetFileName(subDir);
                     if (!ExcludedDirs.Contains(name))
-                        count += CountRecursive(subDir);
+                    {
+                        count += CountRecursive(subDir, depth + 1);
+                    }
                 }
             }
             catch (UnauthorizedAccessException)

@@ -15,7 +15,7 @@
         void MoveUp();
         void MoveDown();
         int? SelectedIndex { get; }
-
+        string? SelectedItem { get; }
         void Render();
         void Clear();
     }
